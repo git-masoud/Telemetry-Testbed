@@ -1,0 +1,41 @@
+# nginx-tcp-services-configmap.yaml
+# This ConfigMap is used by the Nginx Ingress controller to enable TCP passthrough
+# for mail services (SMTP, IMAP, POP3).
+#
+# IMPORTANT:
+# 1. This ConfigMap must be applied to the Kubernetes namespace where your
+#    Nginx Ingress controller is running (e.g., 'ingress-nginx').
+# 2. Your Nginx Ingress controller deployment must be configured with the
+#    '--tcp-services-configmap=<namespace>/tcp-services' argument.
+#    Example: '--tcp-services-configmap=ingress-nginx/tcp-services'
+# 3. The target services (e.g., 'mail/dms-docker-mailserver') must exist and
+#    be of type ClusterIP, exposing the specified ports.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx # USER TO REPLACE: with the namespace of your Nginx Ingress controller
+data:
+  # Format: "<external-port>": "<namespace-of-mailserver-service>/<mailserver-service-name>:<mailserver-service-port>"
+
+  # SMTP Port (standard, often for STARTTLS)
+  "25": "mail/dms-docker-mailserver:25" # USER TO REPLACE: 'mail/' with your docker-mailserver namespace, and 'dms-docker-mailserver' if your Helm release name is not 'dms'
+
+  # IMAP Port (standard, often for STARTTLS)
+  "143": "mail/dms-docker-mailserver:143" # USER TO REPLACE: as above
+
+  # Submission Port (for mail clients to submit outgoing email, uses STARTTLS)
+  "587": "mail/dms-docker-mailserver:587" # USER TO REPLACE: as above
+
+  # SMTPS Port (SMTP over direct SSL/TLS)
+  "465": "mail/dms-docker-mailserver:465" # USER TO REPLACE: as above
+
+  # IMAPS Port (IMAP over direct SSL/TLS)
+  "993": "mail/dms-docker-mailserver:993" # USER TO REPLACE: as above
+
+  # POP3S Port (POP3 over direct SSL/TLS)
+  "995": "mail/dms-docker-mailserver:995" # USER TO REPLACE: as above
+
+  # Optional: If you also want to expose insecure POP3 (not recommended for production)
+  # "110": "mail/dms-docker-mailserver:110" # USER TO REPLACE: as above
