@@ -1,0 +1,83 @@
+# custom-values.yaml
+# Ensure these values are correctly set for your environment.
+
+# It's crucial to set your mail domain and other environment variables here
+deployment:
+  env:
+    OVERRIDE_HOSTNAME: mail.yourdomain.com # USER TO REPLACE: your actual mail domain (e.g., mail.example.com)
+    TZ: "Etc/UTC" # USER TO REPLACE: Your timezone
+
+    # Enable specific services - 1 for enabled, 0 for disabled
+    ENABLE_SMTP: "1"
+    ENABLE_SUBMISSION: "1" # Port 587 for MSA
+    ENABLE_SMTPS: "1"      # Port 465 for SMTPS
+    ENABLE_IMAP: "1"
+    ENABLE_IMAPS: "1"
+    ENABLE_POP3: "1"
+    ENABLE_POP3S: "1"
+    ENABLE_RSPAMD: "1"     # Ensure Rspamd is active if using its Ingress
+    ENABLE_CLAMAV: "0"     # Optional: Antivirus
+    ENABLE_FAIL2BAN: "1"   # Optional: Intrusion prevention
+
+    # SSL Configuration: 'ssl' is a common setting to enable dedicated ports for SMTPS, IMAPS, POP3S
+    SSL_TYPE: ssl
+    # SSL_CERT_PATH: /etc/letsencrypt/live/mail.yourdomain.com/fullchain.pem # USER TO REPLACE (if managing certs inside the container)
+    # SSL_KEY_PATH: /etc/letsencrypt/live/mail.yourdomain.com/privkey.pem    # USER TO REPLACE (if managing certs inside the container)
+
+    # Other common settings - review and adjust as needed
+    PERMIT_DOCKER: network # Adjust based on your network policies
+    POSTMASTER_ADDRESS: postmaster@yourdomain.com # USER TO REPLACE: your postmaster address
+    ONE_DIR: 1 # Store all user mail in a single directory structure (recommended)
+    ENABLE_QUOTAS: 1
+    POSTFIX_MESSAGE_SIZE_LIMIT: 51200000 # 50MB
+    ENABLE_UPDATE_CHECK: 1
+
+# Configuration for Rspamd Ingress (Web UI)
+rspamd:
+  ingress:
+    enabled: true
+    host: rspamd.yourdomain.com # USER TO REPLACE: your actual hostname for Rspamd (e.g., rspamd.example.com)
+    ingressClassName: nginx
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod # USER TO REPLACE: with your ClusterIssuer if different, or remove if not using cert-manager
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP" # Rspamd web UI is HTTP
+    tls:
+      enabled: true
+      secretName: your-rspamd-tls-secret # USER TO REPLACE: your TLS secret name for Rspamd (e.g., rspamd-tls)
+
+# Service settings:
+# The docker-mailserver chart typically creates services with type ClusterIP by default.
+# These ClusterIP services are what the Nginx Ingress TCP passthrough will target.
+# The environment variables above (ENABLE_*, SSL_TYPE) should guide the chart to create
+# the necessary listeners within the mail server container. The chart's service(s)
+# should then expose these ports.
+
+# Example: Persistence configuration (highly recommended for production)
+# persistent_volume_claims:
+#   mail-config:
+#     enabled: true
+#     size: 2Gi
+#     # storageClass: "your-storage-class" # USER TO REPLACE (if needed)
+#   mail-data:
+#     enabled: true
+#     size: 50Gi # USER TO REPLACE (adjust to your needs)
+#     # storageClass: "your-storage-class" # USER TO REPLACE (if needed)
+#   mail-state:
+#     enabled: true
+#     size: 10Gi
+#     # storageClass: "your-storage-class" # USER TO REPLACE (if needed)
+#   mail-log:
+#     enabled: true
+#     size: 5Gi
+#     # storageClass: "your-storage-class" # USER TO REPLACE (if needed)
+
+# Example: Resource configuration (adjust based on your cluster capacity and expected load)
+# deployment:
+#   resources:
+#     requests:
+#       cpu: "500m"
+#       memory: "1Gi"
+#     limits:
+#       cpu: "2"
+#       memory: "4Gi"
