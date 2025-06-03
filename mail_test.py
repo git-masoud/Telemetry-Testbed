@@ -47,7 +47,7 @@ def send_test_email():
         print(f"Sending email to {TEST_RECIPIENT_EMAIL}...")
         server.sendmail(EMAIL_ADDRESS, TEST_RECIPIENT_EMAIL, msg.as_string())
         print("Email sent successfully!")
-        
+
         return True
     except smtplib.SMTPAuthenticationError as e:
         print(f"SMTP Authentication Error: {e}. Check email address and password.")
@@ -130,7 +130,7 @@ def check_test_email():
 if __name__ == "__main__":
     print("--- Mail Server Test Script ---")
     print("WARNING: This script uses hardcoded credentials and is for testing purposes only.")
-    
+
     if send_test_email():
         delay_seconds = 15
         print(f"\nWaiting for {delay_seconds} seconds for email delivery before checking...")
@@ -138,5 +138,5 @@ if __name__ == "__main__":
         check_test_email()
     else:
         print("\nSkipping email check because sending failed.")
-    
+
     print("\n--- Test Script Finished ---")
